@@ -32,6 +32,37 @@ const services: ServiceItem[] = [
   }
 ];
 
+// Component definition moved outside App to prevent re-rendering issues
+const InputField = ({ label, ...props }: any) => (
+  <div className="group">
+    <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5 ml-1 transition-colors group-focus-within:text-stone-900">{label}</label>
+    <input 
+      className="w-full px-4 py-3 bg-stone-50 border border-transparent rounded-sm focus:bg-white focus:border-stone-900 focus:ring-0 transition-all placeholder:text-stone-400 text-stone-900"
+      {...props} 
+    />
+  </div>
+);
+
+// Component definition moved outside App
+const SelectCard = ({ active, onClick, icon: Icon, title, subtitle }: any) => (
+  <div 
+    onClick={onClick}
+    className={`
+      cursor-pointer relative flex flex-row items-center justify-start p-4 rounded-md border transition-all duration-200 w-full
+      ${active 
+        ? 'bg-white border-stone-900 shadow-sm ring-1 ring-stone-900 z-10' 
+        : 'bg-stone-50 border-transparent hover:bg-stone-100 hover:border-stone-200 text-stone-500'}
+    `}
+  >
+    <Icon className={`h-5 w-5 mr-3 ${active ? 'text-stone-900' : 'text-stone-400'}`} />
+    <div className="flex flex-col text-left">
+      <span className={`text-sm font-bold leading-none ${active ? 'text-stone-900' : 'text-stone-600'}`}>{title}</span>
+      <span className="text-[10px] text-stone-400 mt-1 leading-none">{subtitle}</span>
+    </div>
+    {active && <div className="absolute top-1/2 right-4 -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900" />}
+  </div>
+);
+
 const App: React.FC = () => {
   const [formData, setFormData] = useState<BookingFormData>({
     name: '',
@@ -55,7 +86,6 @@ const App: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate network delay then open WhatsApp
     setTimeout(() => {
       const selectedService = services.find(s => s.id === formData.serviceId)?.title || formData.serviceId;
       const deliveryText = formData.deliveryType === 'pickup' ? 'Antar Jemput (+ Rp 5.000)' : 'Drop off di Workshop (Gratis)';
@@ -72,7 +102,6 @@ const App: React.FC = () => {
         `Pembayaran: ${paymentText}`;
 
       const encodedMessage = encodeURIComponent(message);
-      // Specific number 08176468354
       const whatsappUrl = `https://wa.me/628176468354?text=${encodedMessage}`;
       
       window.open(whatsappUrl, '_blank');
@@ -87,40 +116,10 @@ const App: React.FC = () => {
     }
   };
 
-  const InputField = ({ label, ...props }: any) => (
-    <div className="group">
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5 ml-1 transition-colors group-focus-within:text-stone-900">{label}</label>
-      <input 
-        className="w-full px-4 py-3 bg-stone-50 border border-transparent rounded-sm focus:bg-white focus:border-stone-900 focus:ring-0 transition-all placeholder:text-stone-400 text-stone-900"
-        {...props} 
-      />
-    </div>
-  );
-
-  const SelectCard = ({ active, onClick, icon: Icon, title, subtitle }: any) => (
-    <div 
-      onClick={onClick}
-      className={`
-        cursor-pointer relative flex flex-row items-center justify-start p-4 rounded-md border transition-all duration-200 w-full
-        ${active 
-          ? 'bg-white border-stone-900 shadow-sm ring-1 ring-stone-900 z-10' 
-          : 'bg-stone-50 border-transparent hover:bg-stone-100 hover:border-stone-200 text-stone-500'}
-      `}
-    >
-      <Icon className={`h-5 w-5 mr-3 ${active ? 'text-stone-900' : 'text-stone-400'}`} />
-      <div className="flex flex-col text-left">
-        <span className={`text-sm font-bold leading-none ${active ? 'text-stone-900' : 'text-stone-600'}`}>{title}</span>
-        <span className="text-[10px] text-stone-400 mt-1 leading-none">{subtitle}</span>
-      </div>
-      {active && <div className="absolute top-1/2 right-4 -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900" />}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-stone-50 font-sans selection:bg-stone-200 text-stone-900">
       <Navbar />
       
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-in">
@@ -149,7 +148,6 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Services Section */}
       <section id="services" className="py-20 bg-white scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -194,7 +192,6 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* About / Process Section */}
       <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
         <div className="bg-stone-900 text-stone-50 rounded-sm p-8 lg:p-16 overflow-hidden relative shadow-2xl">
           <div className="grid lg:grid-cols-2 gap-12 relative z-10">
@@ -229,7 +226,6 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Booking Form Section */}
       <section id="booking" className="py-24 bg-stone-50 scroll-mt-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden">
@@ -242,7 +238,6 @@ const App: React.FC = () => {
               
               <form onSubmit={handleBookingSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                 
-                {/* Personal Info Column */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-2 text-stone-900 border-b border-stone-100 pb-2 mb-6">
                     <div className="w-2 h-2 bg-stone-900 rounded-full"></div>
@@ -280,7 +275,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Service Details Column */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-2 text-stone-900 border-b border-stone-100 pb-2 mb-6">
                     <div className="w-2 h-2 bg-stone-900 rounded-full"></div>
@@ -329,9 +323,7 @@ const App: React.FC = () => {
                     </select>
                   </div>
                   
-                  {/* Delivery & Payment Grouped - REDESIGNED for Vertical Layout */}
                   <div className="space-y-5 pt-2">
-                    {/* Delivery Section */}
                     <div className="space-y-3">
                       <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider ml-1">Metode Serah Terima</label>
                       <div className="grid grid-cols-2 gap-3">
@@ -352,7 +344,6 @@ const App: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Payment Section */}
                     <div className="space-y-3">
                       <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider ml-1">Metode Pembayaran</label>
                       <div className="grid grid-cols-2 gap-3">
@@ -405,7 +396,6 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer / Contact */}
       <footer id="footer" className="bg-stone-50 border-t border-stone-200 pt-16 pb-8 scroll-mt-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -423,7 +413,7 @@ const App: React.FC = () => {
                 <span>Jl. Kalimaya<br/>Kelurahan Damai<br/>Kecamatan Balikpapan Kota</span>
               </div>
               <div className="flex items-center space-x-3 text-stone-600 text-sm">
-                <MapPin className="h-4 w-4 shrink-0 opacity-0" /> {/* Spacer */}
+                <MapPin className="h-4 w-4 shrink-0 opacity-0" />
                 <span>Buka: Senin - Sabtu (10.00 - 20.00)</span>
               </div>
             </div>
@@ -461,7 +451,6 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* AI Chat Widget */}
       <ChatWidget />
     </div>
   );
