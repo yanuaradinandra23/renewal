@@ -1,7 +1,8 @@
 import { GoogleGenAI, Chat } from "@google/genai";
 
-// Initialize the API client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// 1. FIX: Gunakan import.meta.env untuk Vite, bukan process.env
+// Gunakan optional chaining (?.) agar tidak error jika env belum siap
+const apiKey = import.meta.env?.VITE_API_KEY;
 
 const SYSTEM_INSTRUCTION = `
 You are "Ren", the AI Specialist for "Renewal", a premium shoe care business located in Balikpapan, Indonesia.
@@ -27,25 +28,53 @@ If you are unsure, ask for more details about the material (leather, suede, knit
 Always end with a polite call to action to book the service using the form below.
 `;
 
+// 2. FIX: Lazy Loading. Variabel dimulai dengan null.
+// AI tidak akan dinyalakan sampai user benar-benar butuh.
 let chatSession: Chat | null = null;
+let ai: GoogleGenAI | null = null;
 
 export const initializeChat = (): void => {
-  chatSession = ai.chats.create({
-    model: 'gemini-2.5-flash',
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.7,
-    },
-  });
+  // Guard clause: Jika API Key tidak ada, stop di sini. Jangan crash.
+  if (!apiKey) {
+      console.warn("API Key is missing. Chat will not work.");
+      return;
+  }
+  
+  try {
+    // Hanya buat instance jika belum ada
+    if (!ai) {
+      ai = new GoogleGenAI({ apiKey: apiKey });
+    }
+    
+    // Hanya buat sesi chat jika belum ada
+    if (!chatSession && ai) {
+      chatSession = ai.chats.create({
+        model: 'gemini-2.5-flash',
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.7,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Failed to initialize Gemini:", error);
+  }
 };
 
 export const sendMessageToGemini = async (message: string): Promise<string> => {
+  // Cek ketersediaan API Key sebelum mencoba kirim pesan
+  if (!apiKey) {
+      return "Maaf, fitur Chat AI belum aktif (API Key belum disetting di server). Silakan hubungi admin via WhatsApp.";
+  }
+
+  // Coba inisialisasi jika belum siap
   if (!chatSession) {
     initializeChat();
   }
 
+  // Jika masih gagal inisialisasi
   if (!chatSession) {
-      throw new Error("Failed to initialize chat session");
+      return "Maaf, sistem AI sedang tidak dapat diakses saat ini.";
   }
 
   try {
